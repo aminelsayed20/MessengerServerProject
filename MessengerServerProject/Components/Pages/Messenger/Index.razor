@@ -1,0 +1,89 @@
+﻿@page "/Messenger/"
+
+@attribute [Authorize]
+
+@inject NavigationManager NavigationManager
+@inject UserService UserService
+@rendermode InteractiveServer
+
+<PageTitle>Messenger</PageTitle>
+
+<AuthorizeView>
+    <div class="container-fluid h-100">
+        <div class="row d-flex justify-content-around align-items-center h-100">
+            <div class="col-md-4 col-xl-3 chat">
+                <h1>Friends</h1>
+                <div class="card mb-sm-3 mb-md-0 contacts_card">
+                    <div class="card-header">
+                        <div class="input-group">
+                            <input type="text" placeholder="Search..." class="form-control search" @oninput="FilterUsers">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text search_btn"><i class="bi bi-search"></i></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body contacts_body">
+                        <ul class="contacts">
+                            @if (filteredUsers == null)
+                            {
+                                <li>Loading...</li>
+                            }
+                            else
+                            {
+                                @foreach (var user in filteredUsers)
+                                {
+                                    <li>
+                                        <a href="/Messenger/UserChat/@user.Id">
+                                            <div class="d-flex bd-highlight">
+                                                <div class="img_cont">
+                                                    <img src="@user.ImgPath" class="rounded-circle user_img">
+                                                </div>
+                                                <div class="user_info">
+                                                    <span>@user.FirstName @user.LastName</span>
+                                                </div>
+                                            </div>
+                                        </a>
+                                    </li>
+                                }
+                            }
+                        </ul>
+                    </div>
+                    <div class="card-footer"></div>
+                </div>
+            </div>
+
+            <div class="col-md-4 col-xl-3 chat">
+                <h1>Groups</h1>
+                <div class="card mb-sm-3 mb-md-0 contacts_card">
+                    <div class="card-header">
+                        <div class="input-group">
+                            <input type="text" placeholder="Search..." class="form-control search" @oninput="FilterUsers">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text search_btn"><i class="bi bi-search"></i></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body contacts_body">
+                        <ul class="contacts" id="group-list"></ul>
+                    </div>
+                    <div class="card-footer"></div>
+                </div>
+            </div>
+
+            <div class="col-md-4 col-xl-3 chat">
+                <h1>My Groups</h1>
+                <div class="card mb-sm-3 mb-md-0 contacts_card">
+                    <div class="card-body contacts_body">
+                        <ul class="contacts" id="my-group-list"></ul>
+                    </div>
+                    <div class="card-footer"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <link rel="stylesheet" href="~/css/messenger.css" />
+
+    <Notification />
+
+</AuthorizeView>
+

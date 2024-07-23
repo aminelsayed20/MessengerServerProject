@@ -1,0 +1,71 @@
+﻿
+@inject SignalRService SignalRService
+@implements IAsyncDisposable
+
+
+ <a  href="/Messenger/UserChat/@ChatId"> 
+    <Toasts class="p-3" Messages="messages" AutoHide="true" StackLength="3" Placement="ToastsPlacement.TopRight" />
+ </a> 
+
+
+@* <Button Color="ButtonColor.Success" @onclick="ShowMessage">Success Toast</Button> *@
+
+@code {
+    [Parameter]
+    public string ChatId { get; set; }
+
+    protected async override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                await SignalRService.StartConnectionAsync();
+
+                SignalRService._hubConnection.On<string, string, string, string>("ReceiveMessage", (senderId, senderName, senderImage, messageContent) =>
+                {
+                    if (ChatId != senderId)
+                    {
+                        ShowMessage(ToastType.Success, senderId, senderName, senderImage, messageContent);
+                    }
+
+                    InvokeAsync(StateHasChanged);
+                });
+            }
+            catch (Exception ex)
+            {
+                // Handle exception (e.g., log the error)
+            }
+        }
+
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+    List<ToastMessage> messages = new List<ToastMessage>();
+
+    private void ShowMessage() => ShowMessage(ToastType.Success, "testId", "testName", "testImage", "Test Message");
+
+    private void ShowMessage(ToastType toastType, string senderId, string senderName, string senderImage, string messageContent)
+        => messages.Add(CreateToastMessage(toastType, senderId, senderName, senderImage, messageContent));
+
+    private ToastMessage CreateToastMessage(ToastType toastType, string senderId, string senderName, string senderImage, string messageContent)
+        => new ToastMessage
+            {
+                Type = toastType,
+                Title = senderName,
+                HelpText = $"{DateTime.Now}",
+                Message = messageContent,
+            };
+
+    public bool IsConnected =>
+  SignalRService._hubConnection?.State == HubConnectionState.Connected;
+
+    public async ValueTask DisposeAsync()
+    {
+        if (SignalRService._hubConnection is not null)
+        {
+            await SignalRService.StopConnectionAsync();
+        }
+    }
+
+}

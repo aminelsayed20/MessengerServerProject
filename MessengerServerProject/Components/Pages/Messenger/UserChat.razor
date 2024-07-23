@@ -1,0 +1,114 @@
+﻿@page "/Messenger/UserChat/{userId}"
+
+@using MessengerServerProject.Services
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.SignalR.Client
+@using MessengerServerProject.EntitiesDto.MessengerDtos.UserChatDtos;
+@inject NavigationManager Navigation
+
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Identity
+@using MessengerServerProject.Data
+
+
+@rendermode InteractiveServer
+
+ @inject UserManager<ApplicationUser> UserManager
+@inject SignInManager<ApplicationUser> SignInManager
+@inject IHttpContextAccessor HttpContextAccessor 
+
+@inject SignalRService SignalRService
+
+@inject UserChatServices UserChatServices
+
+@implements IAsyncDisposable
+
+
+
+@attribute [Authorize]
+
+@inject UserService UserService
+
+<AuthorizeView>
+
+    <div class="container-fluid h-100">
+        <div class="row justify-content-center h-100">
+            <div class="col-md-8 col-xl-6 chat">
+                <div class="card">
+                    <div class="card-header msg_head">
+                        <div class="d-flex bd-highlight">
+                            <div class="img_cont">
+                                <img src="@OtherUserImg" class="rounded-circle user_img">
+                                @* <span class="online_icon @IsOnline"></span> *@
+                            </div>
+                            <div class="user_info">
+                                <span>@OtherUserName</span>
+                                <p>@MessageCount Messages</p>
+                            </div>
+                            <div class="video_cam">
+                                <span><i class="fas fa-video"></i></span>
+                                <span><i class="fas fa-phone"></i></span>
+                            </div>
+                        </div>
+                        <span id="action_menu_btn"><i class="fas fa-ellipsis-v"></i></span>
+                        <div class="action_menu">
+                            <ul>
+                                <li><i class="fas fa-user-circle"></i> View profile</li>
+                                <li><i class="fas fa-users"></i> Add to close friends</li>
+                                <li><i class="fas fa-plus"></i> Add to group</li>
+                                <li><i class="fas fa-ban"></i> Block</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="card-body msg_card_body" id="current-chat">
+                       
+                          <ul>
+                            @foreach (var message in Messages)
+                            {
+                                if (message.IsSender)
+                                {
+                                    <div class="d-flex justify-content-end mb-4">
+                                        <div class="msg_cotainer_send">
+                                            @message.Message
+                                            <span class="msg_time_send text-center ">@message.Time.ToString("HH:mm dd/mm")</span>
+                                        </div>
+                                        <div class="img_cont_msg">
+                                            <img src="@CurrentUserImg" class="rounded-circle user_img_msg">
+                                        </div>
+                                    </div>
+                                }
+
+                                else
+                                {
+                                    <div class="d-flex justify-content-start mb-4">
+                                        <div class="img_cont_msg">
+                                            <img src="@OtherUserImg" class="rounded-circle user_img_msg">
+                                        </div>
+                                        <div class="msg_cotainer">
+                                            @message.Message
+                                            <span class="msg_time text-center">@message.Time.ToString("HH:mm dd/mm")</span>
+                                        </div>
+                                    </div>
+                                }
+                            }
+                        </ul>
+                    </div>
+                    <div class="card-footer">
+                        <div class="input-group">
+                            <div class="input-group-append">
+                                <span class="input-group-text attach_btn"><i class="bi bi-paperclip fs-3"></i></span>
+                            </div>
+                            <textarea class="form-control type_msg" @bind="messageInput" placeholder="Type your message..."></textarea>
+                            <div class="input-group-append">
+                                <button class="input-group-text send_btn" @onclick="Send"><i class="bi bi-send fs-3"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <Notification ChatId="@UserId" />
+</AuthorizeView>
+
